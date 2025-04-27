@@ -1,0 +1,2258 @@
+Table: alembic_version
+--------------------------------------------------
+Columns:
+  - version_num (VARCHAR(32)) NOT NULL
+
+Primary Key:
+  - version_num
+
+
+Table: approval_letters
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - letter_number (VARCHAR(50)) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - related_to_type (VARCHAR(50))
+  - related_to_id (INTEGER)
+  - amount (NUMERIC(15, 2))
+  - date_issued (DATE) NOT NULL
+  - issued_by (INTEGER)
+  - approved_by (INTEGER)
+  - file_path (VARCHAR(255))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - approved_by -> users.id
+  - issued_by -> users.id
+  - project_id -> projects.id
+
+
+Table: as_built_drawings
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(255)) NOT NULL
+  - drawing_number (VARCHAR(100))
+  - revision (VARCHAR(20))
+  - discipline (VARCHAR(50))
+  - description (TEXT)
+  - date_received (DATE)
+  - file_path (VARCHAR(255))
+  - file_name (VARCHAR(255))
+  - file_size (INTEGER)
+  - file_format (VARCHAR(20))
+  - prepared_by (VARCHAR(100))
+  - company (VARCHAR(100))
+  - contact_information (TEXT)
+  - notes (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: attic_stock
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - material_name (VARCHAR(255)) NOT NULL
+  - description (TEXT)
+  - quantity (FLOAT) NOT NULL
+  - unit_of_measure (VARCHAR(50))
+  - manufacturer (VARCHAR(100))
+  - product_number (VARCHAR(100))
+  - color (VARCHAR(100))
+  - spec_section (VARCHAR(50))
+  - storage_location (VARCHAR(200))
+  - delivery_date (DATE)
+  - turnover_date (DATE)
+  - supplier (VARCHAR(100))
+  - subcontractor (VARCHAR(100))
+  - contact_information (TEXT)
+  - image_path (VARCHAR(255))
+  - file_path (VARCHAR(255))
+  - notes (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: bid_manuals
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - version (VARCHAR(20))
+  - issue_date (DATE)
+  - description (TEXT)
+  - file_path (VARCHAR(255))
+  - file_name (VARCHAR(255))
+  - file_size (INTEGER)
+  - status (VARCHAR(20))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+  - updated_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+  - updated_by -> users.id
+
+
+Table: bid_packages
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - package_number (VARCHAR(30))
+  - description (TEXT)
+  - issue_date (DATE)
+  - due_date (DATE)
+  - estimated_value (NUMERIC(12, 2))
+  - scope_of_work (TEXT)
+  - status (VARCHAR(20))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+  - updated_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+  - updated_by -> users.id
+
+
+Table: bidders_packages
+--------------------------------------------------
+Columns:
+  - bidder_id (INTEGER) NOT NULL
+  - package_id (INTEGER) NOT NULL
+  - invited_date (DATETIME)
+  - response (VARCHAR(20))
+
+Primary Key:
+  - bidder_id, package_id
+
+Foreign Keys:
+  - bidder_id -> qualified_bidders.id
+  - package_id -> bid_packages.id
+
+
+Table: bids
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - package_id (INTEGER) NOT NULL
+  - bidder_id (INTEGER) NOT NULL
+  - bid_amount (NUMERIC(12, 2))
+  - bid_date (DATETIME)
+  - status (VARCHAR(20))
+  - notes (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+  - updated_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - bidder_id -> qualified_bidders.id
+  - created_by -> users.id
+  - package_id -> bid_packages.id
+  - updated_by -> users.id
+
+
+Table: bim_issue_comments
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - issue_id (INTEGER) NOT NULL
+  - user_id (INTEGER) NOT NULL
+  - content (TEXT) NOT NULL
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - issue_id -> bim_issues.id
+  - user_id -> users.id
+
+
+Table: bim_issues
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - model_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - status (VARCHAR(20)) NOT NULL
+  - priority (VARCHAR(20)) NOT NULL
+  - created_by (INTEGER) NOT NULL
+  - assigned_to (INTEGER)
+  - position_x (FLOAT)
+  - position_y (FLOAT)
+  - position_z (FLOAT)
+  - element_id (VARCHAR(50))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - assigned_to -> users.id
+  - created_by -> users.id
+  - model_id -> bim_models.id
+
+
+Table: bim_model_versions
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - model_id (INTEGER) NOT NULL
+  - version_number (INTEGER) NOT NULL
+  - file_path (VARCHAR(255)) NOT NULL
+  - notes (TEXT)
+  - user_id (INTEGER) NOT NULL
+  - uploaded_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - model_id -> bim_models.id
+  - user_id -> users.id
+
+
+Table: bim_models
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - name (VARCHAR(255)) NOT NULL
+  - model_type (VARCHAR(50)) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - user_id (INTEGER) NOT NULL
+  - current_version_id (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - current_version_id -> bim_model_versions.id
+  - project_id -> projects.id
+  - user_id -> users.id
+
+
+Table: budget_line_items
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - budget_id (INTEGER) NOT NULL
+  - cost_code (VARCHAR(50))
+  - description (VARCHAR(255)) NOT NULL
+  - estimated_amount (NUMERIC(15, 2)) NOT NULL
+  - notes (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - budget_id -> budgets.id
+
+
+Table: budgets
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - total_amount (NUMERIC(15, 2)) NOT NULL
+  - approved (BOOLEAN)
+  - approved_by (INTEGER)
+  - approved_date (DATETIME)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - approved_by -> users.id
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: certificates_of_insurance
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - provider_name (VARCHAR(100)) NOT NULL
+  - insured_party (VARCHAR(100)) NOT NULL
+  - policy_number (VARCHAR(50)) NOT NULL
+  - policy_type (VARCHAR(50))
+  - effective_date (DATE)
+  - expiration_date (DATE) NOT NULL
+  - coverage_amount (FLOAT)
+  - additional_insured (BOOLEAN)
+  - document_path (VARCHAR(255))
+  - notes (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: change_orders
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - change_order_number (VARCHAR(50)) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - amount (NUMERIC(15, 2)) NOT NULL
+  - status (VARCHAR(20))
+  - date_submitted (DATE)
+  - date_approved (DATE)
+  - date_executed (DATE)
+  - time_extension_days (INTEGER)
+  - submitted_by (INTEGER)
+  - approved_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - approved_by -> users.id
+  - project_id -> projects.id
+  - submitted_by -> users.id
+
+
+Table: checklists
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - checklist_number (VARCHAR(50))
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - category (VARCHAR(50))
+  - location (VARCHAR(100))
+  - items (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: client_contacts
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - client_id (INTEGER) NOT NULL
+  - first_name (VARCHAR(50)) NOT NULL
+  - last_name (VARCHAR(50)) NOT NULL
+  - title (VARCHAR(100))
+  - email (VARCHAR(100))
+  - phone (VARCHAR(20))
+  - is_primary (BOOLEAN)
+  - notes (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - client_id -> clients.id
+
+
+Table: clients
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - company_name (VARCHAR(100))
+  - email (VARCHAR(100))
+  - phone (VARCHAR(20))
+  - address (VARCHAR(200))
+  - city (VARCHAR(100))
+  - state (VARCHAR(50))
+  - zip_code (VARCHAR(20))
+  - country (VARCHAR(50))
+  - website (VARCHAR(100))
+  - description (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+
+Table: closeout_documents
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(255)) NOT NULL
+  - document_type (VARCHAR(100))
+  - description (TEXT)
+  - document_number (VARCHAR(100))
+  - date_issued (DATE)
+  - date_received (DATE)
+  - issued_by (VARCHAR(100))
+  - received_from (VARCHAR(100))
+  - file_path (VARCHAR(255))
+  - file_name (VARCHAR(255))
+  - file_size (INTEGER)
+  - notes (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: companies
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - company_type (VARCHAR(50))
+  - address_line1 (VARCHAR(100))
+  - address_line2 (VARCHAR(100))
+  - city (VARCHAR(50))
+  - state_province (VARCHAR(50))
+  - postal_code (VARCHAR(20))
+  - country (VARCHAR(50))
+  - phone (VARCHAR(20))
+  - fax (VARCHAR(20))
+  - website (VARCHAR(100))
+  - tax_id (VARCHAR(50))
+  - notes (TEXT)
+  - status (VARCHAR(20))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+
+Table: company_contacts
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - company_id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - title (VARCHAR(100))
+  - email (VARCHAR(100))
+  - phone (VARCHAR(20))
+  - mobile (VARCHAR(20))
+  - is_primary (BOOLEAN)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - company_id -> companies.id
+
+
+Table: contract_change_orders
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - contract_id (INTEGER) NOT NULL
+  - contract_type (VARCHAR(20)) NOT NULL
+  - change_order_number (VARCHAR(50))
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - amount (FLOAT) NOT NULL
+  - status (VARCHAR(20))
+  - requested_date (DATE)
+  - approved_date (DATE)
+  - approved_by (INTEGER)
+  - time_extension_days (INTEGER)
+  - reason_code (VARCHAR(50))
+  - document_path (VARCHAR(255))
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - approved_by -> users.id
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: contract_documents
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - contract_id (INTEGER) NOT NULL
+  - contract_type (VARCHAR(20)) NOT NULL
+  - document_type (VARCHAR(50)) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - file_name (VARCHAR(255))
+  - file_path (VARCHAR(255))
+  - file_size (INTEGER)
+  - file_type (VARCHAR(50))
+  - version (VARCHAR(20))
+  - uploaded_by (INTEGER)
+  - uploaded_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - project_id -> projects.id
+  - uploaded_by -> users.id
+
+
+Table: contracts
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - status (VARCHAR(20))
+  - contract_type (VARCHAR(50))
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: cost_codes
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER)
+  - code (VARCHAR(20)) NOT NULL
+  - description (VARCHAR(100)) NOT NULL
+  - csi_subdivision_id (INTEGER)
+  - parent_code_id (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - csi_subdivision_id -> csi_subdivisions.id
+  - parent_code_id -> cost_codes.id
+  - project_id -> projects.id
+
+
+Table: csi_divisions
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - division_number (VARCHAR(10)) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+
+Primary Key:
+  - id
+
+
+Table: csi_subdivisions
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - division_id (INTEGER) NOT NULL
+  - subdivision_number (VARCHAR(10)) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - division_id -> csi_divisions.id
+
+
+Table: daily_report_photos
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - report_id (INTEGER) NOT NULL
+  - file_path (VARCHAR(255)) NOT NULL
+  - filename (VARCHAR(255)) NOT NULL
+  - description (TEXT)
+  - uploaded_at (DATETIME)
+  - uploaded_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - report_id -> daily_reports.id
+  - uploaded_by -> users.id
+
+
+Table: daily_reports
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - report_number (VARCHAR(50))
+  - report_date (DATE)
+  - weather_condition (VARCHAR(20))
+  - temperature_low (FLOAT)
+  - temperature_high (FLOAT)
+  - precipitation (FLOAT)
+  - wind_speed (FLOAT)
+  - site_conditions (TEXT)
+  - work_status (VARCHAR(20))
+  - delay_reason (TEXT)
+  - labor_count (INTEGER)
+  - labor_hours (FLOAT)
+  - equipment_count (INTEGER)
+  - work_performed (TEXT)
+  - materials_received (TEXT)
+  - issues (TEXT)
+  - notes (TEXT)
+  - is_submitted (BOOLEAN)
+  - submitted_at (DATETIME)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: database_settings
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - setting_key (VARCHAR(50)) NOT NULL
+  - setting_value (TEXT)
+  - setting_type (VARCHAR(20))
+  - description (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+
+Table: device_tokens
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - user_id (INTEGER)
+  - token (VARCHAR(255)) NOT NULL
+  - platform (VARCHAR(20)) NOT NULL
+  - last_seen (DATETIME)
+  - created_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - user_id -> users.id
+
+Indexes:
+  - ix_device_tokens_token on (token)
+  - ix_device_tokens_user_id on (user_id)
+
+
+Table: direct_costs
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - cost_code (VARCHAR(50))
+  - description (VARCHAR(255)) NOT NULL
+  - amount (NUMERIC(15, 2)) NOT NULL
+  - date_incurred (DATE) NOT NULL
+  - vendor_id (INTEGER)
+  - notes (TEXT)
+  - status (VARCHAR(20))
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+  - vendor_id -> companies.id
+
+
+Table: documents
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(255)) NOT NULL
+  - file_path (VARCHAR(255))
+  - file_name (VARCHAR(255))
+  - file_size (INTEGER)
+  - file_type (VARCHAR(50))
+  - description (TEXT)
+  - uploaded_by (INTEGER)
+  - uploaded_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - project_id -> projects.id
+  - uploaded_by -> users.id
+
+
+Table: drawings
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - number (VARCHAR(30)) NOT NULL
+  - title (VARCHAR(200)) NOT NULL
+  - discipline (VARCHAR(50))
+  - sheet_size (VARCHAR(20))
+  - revision (VARCHAR(10))
+  - revision_date (DATE)
+  - scale (VARCHAR(20))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - uploaded_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - project_id -> projects.id
+  - uploaded_by -> users.id
+
+
+Table: equipment_entries
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - daily_report_id (INTEGER) NOT NULL
+  - equipment_type (VARCHAR(100))
+  - count (INTEGER)
+  - hours_used (FLOAT)
+  - notes (VARCHAR(255))
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - daily_report_id -> daily_reports.id
+
+
+Table: equipment_rates
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER)
+  - name (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - unit (VARCHAR(20))
+  - rate (NUMERIC(10, 2)) NOT NULL
+  - default_markup (NUMERIC(5, 2))
+  - effective_date (DATE)
+  - expiration_date (DATE)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: field_inspections
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - inspection_date (DATE) NOT NULL
+  - inspection_type (VARCHAR(100)) NOT NULL
+  - inspector (VARCHAR(100))
+  - agency (VARCHAR(100))
+  - result (VARCHAR(20))
+  - notes (TEXT)
+  - followup_required (BOOLEAN)
+  - followup_date (DATE)
+  - created_at (DATETIME)
+  - created_by (INTEGER)
+  - updated_at (DATETIME)
+  - updated_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+  - updated_by -> users.id
+
+
+Table: field_photos
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - daily_report_id (INTEGER)
+  - title (VARCHAR(100))
+  - description (TEXT)
+  - file_path (VARCHAR(255)) NOT NULL
+  - file_name (VARCHAR(255)) NOT NULL
+  - file_size (INTEGER)
+  - file_type (VARCHAR(50))
+  - location (VARCHAR(255))
+  - latitude (FLOAT)
+  - longitude (FLOAT)
+  - taken_at (DATETIME)
+  - uploaded_at (DATETIME)
+  - uploaded_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - daily_report_id -> daily_reports.id
+  - project_id -> projects.id
+  - uploaded_by -> users.id
+
+
+Table: final_inspections
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - inspection_type (VARCHAR(100)) NOT NULL
+  - authority (VARCHAR(100))
+  - inspector_name (VARCHAR(100))
+  - inspection_date (DATE)
+  - result (VARCHAR(50))
+  - certificate_number (VARCHAR(100))
+  - expiration_date (DATE)
+  - file_path (VARCHAR(255))
+  - file_name (VARCHAR(255))
+  - description (TEXT)
+  - comments (TEXT)
+  - follow_up_required (BOOLEAN)
+  - follow_up_notes (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: incident_photos
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - incident_id (INTEGER) NOT NULL
+  - file_path (VARCHAR(255)) NOT NULL
+  - caption (VARCHAR(255))
+  - uploaded_by (INTEGER)
+  - uploaded_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - incident_id -> incident_reports.id
+  - uploaded_by -> users.id
+
+
+Table: incident_reports
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - incident_number (VARCHAR(50))
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT) NOT NULL
+  - incident_date (DATE)
+  - incident_time (TIME)
+  - location (VARCHAR(100))
+  - incident_type (VARCHAR(50))
+  - severity (VARCHAR(20))
+  - injured_person (VARCHAR(100))
+  - injured_person_company (VARCHAR(100))
+  - body_part (VARCHAR(50))
+  - injury_type (VARCHAR(50))
+  - treatment (VARCHAR(100))
+  - work_related (BOOLEAN)
+  - spill_type (VARCHAR(100))
+  - spill_amount (VARCHAR(50))
+  - containment_measures (TEXT)
+  - property_damaged (VARCHAR(100))
+  - damage_description (TEXT)
+  - estimated_cost (FLOAT)
+  - is_recordable (BOOLEAN)
+  - is_lost_time (BOOLEAN)
+  - days_restricted (INTEGER)
+  - days_away (INTEGER)
+  - immediate_causes (TEXT)
+  - root_causes (TEXT)
+  - corrective_actions (TEXT)
+  - status (VARCHAR(20))
+  - reported_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - investigated_by (INTEGER)
+  - investigation_date (DATE)
+  - investigation_report (TEXT)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - investigated_by -> users.id
+  - project_id -> projects.id
+  - reported_by -> users.id
+
+
+Table: invoices
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - invoice_number (VARCHAR(50)) NOT NULL
+  - vendor_id (INTEGER)
+  - description (TEXT)
+  - amount (NUMERIC(15, 2)) NOT NULL
+  - date_issued (DATE) NOT NULL
+  - date_due (DATE)
+  - status (VARCHAR(20))
+  - approved_by (INTEGER)
+  - approved_date (DATETIME)
+  - paid_date (DATE)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - approved_by -> users.id
+  - created_by -> users.id
+  - project_id -> projects.id
+  - vendor_id -> companies.id
+
+
+Table: jha_steps
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - jha_id (INTEGER) NOT NULL
+  - step_number (INTEGER)
+  - job_step (TEXT) NOT NULL
+  - hazards (TEXT) NOT NULL
+  - controls (TEXT) NOT NULL
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - jha_id -> job_hazard_analyses.id
+
+
+Table: job_hazard_analyses
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - jha_number (VARCHAR(50))
+  - title (VARCHAR(100)) NOT NULL
+  - job_description (TEXT) NOT NULL
+  - location (VARCHAR(100))
+  - company (VARCHAR(100))
+  - required_ppe (TEXT)
+  - required_training (TEXT)
+  - required_permits (TEXT)
+  - special_equipment (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - approved_by (INTEGER)
+  - approval_date (DATE)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - approved_by -> users.id
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: labor_entries
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - daily_report_id (INTEGER) NOT NULL
+  - company (VARCHAR(100))
+  - work_description (VARCHAR(255))
+  - worker_count (INTEGER)
+  - hours_worked (FLOAT)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - daily_report_id -> daily_reports.id
+
+
+Table: labor_rates
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER)
+  - name (VARCHAR(100)) NOT NULL
+  - trade (VARCHAR(50))
+  - description (TEXT)
+  - rate_regular (NUMERIC(10, 2)) NOT NULL
+  - rate_overtime (NUMERIC(10, 2))
+  - rate_doubletime (NUMERIC(10, 2))
+  - unit (VARCHAR(20))
+  - effective_date (DATE)
+  - expiration_date (DATE)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: letters_of_intent
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - recipient_name (VARCHAR(100)) NOT NULL
+  - recipient_company (VARCHAR(100))
+  - work_description (TEXT) NOT NULL
+  - estimated_value (FLOAT)
+  - issue_date (DATE) NOT NULL
+  - expiration_date (DATE)
+  - executed (BOOLEAN)
+  - executed_date (DATE)
+  - converted_to_contract (BOOLEAN)
+  - contract_id (INTEGER)
+  - document_path (VARCHAR(255))
+  - notes (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: lien_waivers
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - contractor_name (VARCHAR(100)) NOT NULL
+  - waiver_type (VARCHAR(50))
+  - waiver_date (DATE) NOT NULL
+  - amount (FLOAT)
+  - through_date (DATE)
+  - document_path (VARCHAR(255))
+  - notes (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: manpower_entries
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - daily_report_id (INTEGER) NOT NULL
+  - company_name (VARCHAR(100)) NOT NULL
+  - trade (VARCHAR(100))
+  - personnel_count (INTEGER)
+  - hours_worked (FLOAT)
+  - work_description (TEXT)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - daily_report_id -> daily_reports.id
+
+
+Table: material_rates
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER)
+  - name (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - unit (VARCHAR(20)) NOT NULL
+  - rate (NUMERIC(10, 2)) NOT NULL
+  - default_markup (NUMERIC(5, 2))
+  - effective_date (DATE)
+  - expiration_date (DATE)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: meetings
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - meeting_date (DATETIME) NOT NULL
+  - location (VARCHAR(100))
+  - meeting_type (VARCHAR(50))
+  - attendees (TEXT)
+  - agenda (TEXT)
+  - minutes (TEXT)
+  - action_items (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: notification_preferences
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - user_id (INTEGER)
+  - daily_reports (BOOLEAN)
+  - rfis (BOOLEAN)
+  - submittals (BOOLEAN)
+  - safety_incidents (BOOLEAN)
+  - punchlist_items (BOOLEAN)
+  - change_orders (BOOLEAN)
+  - project_updates (BOOLEAN)
+  - push_enabled (BOOLEAN)
+  - email_enabled (BOOLEAN)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - user_id -> users.id
+
+Indexes:
+  - ix_notification_preferences_user_id on (user_id)
+
+
+Table: om_manuals
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(255)) NOT NULL
+  - description (TEXT)
+  - file_path (VARCHAR(255))
+  - file_name (VARCHAR(255))
+  - file_size (INTEGER)
+  - submission_date (DATE)
+  - equipment_category (VARCHAR(100))
+  - manufacturer (VARCHAR(100))
+  - model_number (VARCHAR(100))
+  - location (VARCHAR(200))
+  - notes (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: orientation_attendees
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - orientation_id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - company (VARCHAR(100))
+  - trade (VARCHAR(100))
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - orientation_id -> safety_orientations.id
+
+
+Table: permits
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - permit_number (VARCHAR(50))
+  - issuing_authority (VARCHAR(100))
+  - type (VARCHAR(50))
+  - status (VARCHAR(20))
+  - submission_date (DATE)
+  - approval_date (DATE)
+  - expiration_date (DATE)
+  - notes (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: photos
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - daily_report_id (INTEGER)
+  - filename (VARCHAR(255)) NOT NULL
+  - title (VARCHAR(100))
+  - description (TEXT)
+  - location (VARCHAR(100))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - daily_report_id -> daily_reports.id
+  - project_id -> projects.id
+
+
+Table: potential_change_orders
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - pco_number (VARCHAR(50)) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - amount (NUMERIC(15, 2))
+  - status (VARCHAR(20))
+  - date_submitted (DATE)
+  - date_required (DATE)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: pretask_attendees
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - pre_task_plan_id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - company (VARCHAR(100))
+  - signature (BOOLEAN)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - pre_task_plan_id -> pretask_plans.id
+
+
+Table: pretask_plans
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - plan_number (VARCHAR(50))
+  - title (VARCHAR(100)) NOT NULL
+  - task_description (TEXT) NOT NULL
+  - date (DATE)
+  - location (VARCHAR(100))
+  - company (VARCHAR(100))
+  - hazards_identified (TEXT)
+  - safety_concerns (TEXT)
+  - required_ppe (TEXT)
+  - tools_equipment (TEXT)
+  - emergency_procedures (TEXT)
+  - supervisor_name (VARCHAR(100))
+  - supervisor_signature (BOOLEAN)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: prime_contracts
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - contract_number (VARCHAR(50))
+  - contract_type (VARCHAR(50))
+  - contract_value (FLOAT)
+  - start_date (DATE)
+  - end_date (DATE)
+  - client_name (VARCHAR(100))
+  - client_contact (VARCHAR(100))
+  - client_email (VARCHAR(100))
+  - client_phone (VARCHAR(20))
+  - retainage_percent (FLOAT)
+  - payment_terms (VARCHAR(100))
+  - executed_date (DATE)
+  - signed_by (VARCHAR(100))
+  - approved_changes (FLOAT)
+  - pending_changes (FLOAT)
+  - revised_value (FLOAT)
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - status (VARCHAR(20))
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - document_path (VARCHAR(255))
+  - signed_document_path (VARCHAR(255))
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - id -> contracts.id
+  - project_id -> projects.id
+
+
+Table: professional_service_agreements
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - agreement_number (VARCHAR(50))
+  - agreement_type (VARCHAR(50))
+  - agreement_value (FLOAT)
+  - start_date (DATE)
+  - end_date (DATE)
+  - company_name (VARCHAR(100))
+  - contact_name (VARCHAR(100))
+  - contact_email (VARCHAR(100))
+  - contact_phone (VARCHAR(20))
+  - scope_of_services (TEXT)
+  - rate_schedule (TEXT)
+  - payment_terms (VARCHAR(100))
+  - executed_date (DATE)
+  - signed_by (VARCHAR(100))
+  - approved_changes (FLOAT)
+  - pending_changes (FLOAT)
+  - revised_value (FLOAT)
+  - insurance_requirements (TEXT)
+  - insurance_expiration (DATE)
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - status (VARCHAR(20))
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - document_path (VARCHAR(255))
+  - signed_document_path (VARCHAR(255))
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - id -> contracts.id
+  - project_id -> projects.id
+
+
+Table: project_images
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - filename (VARCHAR(255)) NOT NULL
+  - file_path (VARCHAR(255)) NOT NULL
+  - title (VARCHAR(100))
+  - description (TEXT)
+  - is_featured (BOOLEAN)
+  - upload_date (DATETIME)
+  - uploaded_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - project_id -> projects.id
+  - uploaded_by -> users.id
+
+
+Table: project_notes
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - content (TEXT) NOT NULL
+  - created_by (INTEGER) NOT NULL
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: project_photos
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - daily_report_id (INTEGER)
+  - title (VARCHAR(100))
+  - description (TEXT)
+  - file_path (VARCHAR(255)) NOT NULL
+  - file_size (INTEGER)
+  - location (VARCHAR(100))
+  - latitude (FLOAT)
+  - longitude (FLOAT)
+  - is_featured (BOOLEAN)
+  - uploaded_at (DATETIME)
+  - uploaded_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - daily_report_id -> daily_reports.id
+  - project_id -> projects.id
+  - uploaded_by -> users.id
+
+
+Table: project_settings
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - setting_key (VARCHAR(50)) NOT NULL
+  - setting_value (TEXT)
+  - setting_type (VARCHAR(20))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - project_id -> projects.id
+
+
+Table: project_team_members
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - user_id (INTEGER) NOT NULL
+  - role (VARCHAR(50)) NOT NULL
+  - is_active (BOOLEAN)
+  - added_by (INTEGER) NOT NULL
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - added_by -> users.id
+  - project_id -> projects.id
+  - user_id -> users.id
+
+
+Table: project_users
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - user_id (INTEGER) NOT NULL
+  - role (VARCHAR(50)) NOT NULL
+  - permissions (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - project_id -> projects.id
+  - user_id -> users.id
+
+
+Table: projects
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - number (VARCHAR(64)) NOT NULL
+  - description (TEXT)
+  - start_date (DATE) NOT NULL
+  - end_date (DATE)
+  - target_completion_date (DATE)
+  - actual_completion_date (DATE)
+  - budget (NUMERIC(15, 2))
+  - actual_cost (NUMERIC(15, 2))
+  - contract_amount (NUMERIC(15, 2))
+  - status (VARCHAR(20))
+  - client_id (INTEGER)
+  - client_name (VARCHAR(255))
+  - client_contact_info (TEXT)
+  - project_type (VARCHAR(50))
+  - category (VARCHAR(50))
+  - address (VARCHAR(255))
+  - city (VARCHAR(100))
+  - state (VARCHAR(100))
+  - zip_code (VARCHAR(20))
+  - country (VARCHAR(100))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - client_id -> clients.id
+
+
+Table: pull_plans
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - start_date (DATE)
+  - end_date (DATE)
+  - location (VARCHAR(100))
+  - participants (TEXT)
+  - activities (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: punchlist_items
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - punchlist_id (INTEGER) NOT NULL
+  - description (TEXT) NOT NULL
+  - location (VARCHAR(100))
+  - responsible_party (VARCHAR(100))
+  - priority (VARCHAR(20))
+  - due_date (DATE)
+  - photo (VARCHAR(255))
+  - status (VARCHAR(20))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+  - closed_at (DATETIME)
+  - closed_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - closed_by -> users.id
+  - created_by -> users.id
+  - punchlist_id -> punchlists.id
+
+
+Table: punchlist_photos
+--------------------------------------------------
+Columns:
+  - punchlist_item_id (INTEGER) NOT NULL
+  - field_photo_id (INTEGER) NOT NULL
+
+Primary Key:
+  - punchlist_item_id, field_photo_id
+
+Foreign Keys:
+  - field_photo_id -> field_photos.id
+  - punchlist_item_id -> punchlist_items.id
+
+
+Table: punchlists
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - punchlist_number (VARCHAR(50))
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - area (VARCHAR(100))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: qualified_bidders
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - company_id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - contact_name (VARCHAR(100))
+  - contact_email (VARCHAR(100))
+  - contact_phone (VARCHAR(20))
+  - qualification_date (DATE)
+  - qualification_status (VARCHAR(20))
+  - notes (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+  - updated_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - company_id -> companies.id
+  - created_by -> users.id
+  - project_id -> projects.id
+  - updated_by -> users.id
+
+
+Table: rfis
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - number (VARCHAR(20)) NOT NULL
+  - subject (VARCHAR(200)) NOT NULL
+  - question (TEXT) NOT NULL
+  - answer (TEXT)
+  - discipline (VARCHAR(50))
+  - status (VARCHAR(20))
+  - date_submitted (DATE)
+  - date_required (DATE)
+  - date_answered (DATE)
+  - submitted_by (INTEGER)
+  - answered_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - assigned_to (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - answered_by -> users.id
+  - assigned_to -> users.id
+  - project_id -> projects.id
+  - submitted_by -> users.id
+
+
+Table: roles
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - name (VARCHAR(64))
+  - default (BOOLEAN)
+  - permissions (INTEGER)
+  - description (VARCHAR(255))
+
+Primary Key:
+  - id
+
+Indexes:
+  - ix_roles_default on (default)
+
+
+Table: safety_incidents
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - incident_date (DATE)
+  - incident_time (TIME)
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - location (VARCHAR(100))
+  - severity (VARCHAR(20))
+  - type (VARCHAR(50))
+  - involved_parties (TEXT)
+  - witnesses (TEXT)
+  - actions_taken (TEXT)
+  - reported_by (INTEGER)
+  - reported_at (DATETIME)
+  - is_reviewed (BOOLEAN)
+  - reviewed_by (INTEGER)
+  - reviewed_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - project_id -> projects.id
+  - reported_by -> users.id
+  - reviewed_by -> users.id
+
+
+Table: safety_metrics
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - date (DATE)
+  - man_hours (INTEGER)
+  - recordable_incidents (INTEGER)
+  - lost_time_incidents (INTEGER)
+  - first_aid_incidents (INTEGER)
+  - near_miss_incidents (INTEGER)
+  - trir (FLOAT)
+  - ltir (FLOAT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: safety_observations
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT) NOT NULL
+  - observation_date (DATE)
+  - location (VARCHAR(100))
+  - category (VARCHAR(50))
+  - severity (VARCHAR(20))
+  - status (VARCHAR(20))
+  - corrective_action (TEXT)
+  - due_date (DATE)
+  - closed_date (DATE)
+  - closed_by (INTEGER)
+  - observed_by (INTEGER)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - closed_by -> users.id
+  - created_by -> users.id
+  - observed_by -> users.id
+  - project_id -> projects.id
+
+
+Table: safety_orientations
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - orientation_number (VARCHAR(50))
+  - title (VARCHAR(100)) NOT NULL
+  - date (DATE)
+  - location (VARCHAR(100))
+  - topics (TEXT)
+  - presenter (VARCHAR(100))
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: safety_photos
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - record_type (VARCHAR(50)) NOT NULL
+  - record_id (INTEGER) NOT NULL
+  - file_name (VARCHAR(255))
+  - file_path (VARCHAR(255)) NOT NULL
+  - uploaded_by (INTEGER)
+  - uploaded_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - uploaded_by -> users.id
+
+
+Table: schedules
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - scheduled_date (DATE) NOT NULL
+  - start_time (TIME)
+  - end_time (TIME)
+  - location (VARCHAR(100))
+  - category (VARCHAR(50))
+  - priority (VARCHAR(20))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+Indexes:
+  - ix_schedules_scheduled_date on (scheduled_date)
+
+
+Table: specifications
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - section_number (VARCHAR(20)) NOT NULL
+  - title (VARCHAR(200)) NOT NULL
+  - division (VARCHAR(50))
+  - version (VARCHAR(10))
+  - issue_date (DATE)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - uploaded_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - project_id -> projects.id
+  - uploaded_by -> users.id
+
+
+Table: subcontracts
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - subcontract_number (VARCHAR(50))
+  - subcontract_type (VARCHAR(50))
+  - subcontract_value (FLOAT)
+  - start_date (DATE)
+  - end_date (DATE)
+  - company_name (VARCHAR(100))
+  - contact_name (VARCHAR(100))
+  - contact_email (VARCHAR(100))
+  - contact_phone (VARCHAR(20))
+  - scope_of_work (TEXT)
+  - retainage_percent (FLOAT)
+  - payment_terms (VARCHAR(100))
+  - executed_date (DATE)
+  - signed_by (VARCHAR(100))
+  - approved_changes (FLOAT)
+  - pending_changes (FLOAT)
+  - revised_value (FLOAT)
+  - insurance_expiration (DATE)
+  - bonded (BOOLEAN)
+  - bond_company (VARCHAR(100))
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - status (VARCHAR(20))
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - document_path (VARCHAR(255))
+  - signed_document_path (VARCHAR(255))
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - id -> contracts.id
+  - project_id -> projects.id
+
+
+Table: submittals
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - number (VARCHAR(20)) NOT NULL
+  - title (VARCHAR(200)) NOT NULL
+  - description (TEXT)
+  - specification_section (VARCHAR(50))
+  - status (VARCHAR(20))
+  - date_submitted (DATE)
+  - date_required (DATE)
+  - date_returned (DATE)
+  - submitted_by (INTEGER)
+  - reviewed_by (INTEGER)
+  - review_comments (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - assigned_to (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - assigned_to -> users.id
+  - project_id -> projects.id
+  - reviewed_by -> users.id
+  - submitted_by -> users.id
+
+
+Table: task_activities
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - task_id (INTEGER) NOT NULL
+  - user_id (INTEGER) NOT NULL
+  - action (VARCHAR(50)) NOT NULL
+  - description (TEXT)
+  - data (TEXT)
+  - created_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - task_id -> tasks.id
+  - user_id -> users.id
+
+
+Table: tasks
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - name (VARCHAR(100)) NOT NULL
+  - description (TEXT)
+  - project_id (INTEGER) NOT NULL
+  - status (VARCHAR(20))
+  - priority (VARCHAR(10))
+  - start_date (DATE)
+  - due_date (DATE)
+  - completed_date (DATE)
+  - is_milestone (BOOLEAN)
+  - parent_id (INTEGER)
+  - assigned_to (INTEGER)
+  - created_by (INTEGER) NOT NULL
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - assigned_to -> users.id
+  - created_by -> users.id
+  - parent_id -> tasks.id
+  - project_id -> projects.id
+
+
+Table: transmittals
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - number (VARCHAR(20)) NOT NULL
+  - subject (VARCHAR(200)) NOT NULL
+  - sender_id (INTEGER)
+  - recipient_id (INTEGER)
+  - company_from_id (INTEGER)
+  - company_to_id (INTEGER)
+  - date_sent (DATE)
+  - description (TEXT)
+  - method (VARCHAR(50))
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - company_from_id -> companies.id
+  - company_to_id -> companies.id
+  - project_id -> projects.id
+  - recipient_id -> users.id
+  - sender_id -> users.id
+
+
+Table: user_projects
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - user_id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - role (VARCHAR(100))
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - project_id -> projects.id
+  - user_id -> users.id
+
+
+Table: users
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - email (VARCHAR(120)) NOT NULL
+  - password_hash (VARCHAR(255))
+  - name (VARCHAR(120))
+  - role_id (INTEGER)
+  - company_id (INTEGER)
+  - is_active (BOOLEAN)
+  - api_key (VARCHAR(64))
+  - created_at (DATETIME)
+  - last_login_at (DATETIME)
+  - last_seen (DATETIME)
+  - preferences (JSON)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - company_id -> companies.id
+  - role_id -> roles.id
+
+Indexes:
+  - ix_users_api_key on (api_key) UNIQUE
+  - ix_users_email on (email) UNIQUE
+
+
+Table: warranties
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - title (VARCHAR(255)) NOT NULL
+  - description (TEXT)
+  - warranty_type (VARCHAR(50))
+  - status (VARCHAR(50))
+  - manufacturer (VARCHAR(100))
+  - supplier (VARCHAR(100))
+  - contractor (VARCHAR(100))
+  - contact_name (VARCHAR(100))
+  - contact_phone (VARCHAR(50))
+  - contact_email (VARCHAR(100))
+  - equipment_category (VARCHAR(100))
+  - model_number (VARCHAR(100))
+  - serial_number (VARCHAR(100))
+  - location (VARCHAR(200))
+  - start_date (DATE) NOT NULL
+  - end_date (DATE)
+  - duration_months (INTEGER)
+  - file_path (VARCHAR(255))
+  - file_name (VARCHAR(255))
+  - file_size (INTEGER)
+  - terms_conditions (TEXT)
+  - exclusions (TEXT)
+  - maintenance_requirements (TEXT)
+  - created_by (INTEGER)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+
+Table: work_activities
+--------------------------------------------------
+Columns:
+  - id (INTEGER) NOT NULL
+  - project_id (INTEGER) NOT NULL
+  - activity_type (VARCHAR(50)) NOT NULL
+  - description (TEXT) NOT NULL
+  - location (VARCHAR(100))
+  - start_date (DATE)
+  - end_date (DATE)
+  - percentage_complete (INTEGER)
+  - notes (TEXT)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+  - created_by (INTEGER)
+
+Primary Key:
+  - id
+
+Foreign Keys:
+  - created_by -> users.id
+  - project_id -> projects.id
+
+

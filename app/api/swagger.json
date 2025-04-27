@@ -1,0 +1,1275 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Construction Dashboard API",
+    "description": "API for Construction Project Management Dashboard",
+    "version": "1.0.0"
+  },
+  "basePath": "/api",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "paths": {
+    "/projects": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Get list of projects",
+        "description": "Returns all projects accessible to the authenticated user",
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/ProjectList"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/projects/{id}": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Get project details",
+        "description": "Returns details of a specific project",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Project ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/ProjectDetail"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/projects/{id}/rfis": {
+      "get": {
+        "tags": [
+          "Engineering"
+        ],
+        "summary": "Get RFIs for project",
+        "description": "Returns all RFIs for a specific project",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Project ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/RFIList"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/projects/{id}/submittals": {
+      "get": {
+        "tags": [
+          "Engineering"
+        ],
+        "summary": "Get submittals for project",
+        "description": "Returns all submittals for a specific project",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Project ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/SubmittalList"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/projects/{id}/daily-reports": {
+      "get": {
+        "tags": [
+          "Field"
+        ],
+        "summary": "Get daily reports for project",
+        "description": "Returns all daily reports for a specific project",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Project ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/DailyReportList"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/daily-reports/create": {
+      "post": {
+        "tags": [
+          "Field"
+        ],
+        "summary": "Create a new daily report",
+        "description": "Creates a new daily report for a project",
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Daily report object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DailyReportCreate"
+            }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/DailyReportResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/daily-reports/{id}": {
+      "get": {
+        "tags": [
+          "Field"
+        ],
+        "summary": "Get daily report by ID",
+        "description": "Returns a specific daily report",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Daily Report ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/DailyReportDetail"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Daily report not found"
+          }
+        }
+      }
+    },
+    "/projects/{id}/safety/observations": {
+      "get": {
+        "tags": [
+          "Safety"
+        ],
+        "summary": "Get safety observations for project",
+        "description": "Returns all safety observations for a specific project",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Project ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/SafetyObservationList"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/projects/{id}/safety/incidents": {
+      "get": {
+        "tags": [
+          "Safety"
+        ],
+        "summary": "Get safety incidents for project",
+        "description": "Returns all safety incidents for a specific project",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Project ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/IncidentList"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/projects/{id}/cost/change-orders": {
+      "get": {
+        "tags": [
+          "Cost"
+        ],
+        "summary": "Get change orders for project",
+        "description": "Returns all change orders for a specific project",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Project ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/ChangeOrderList"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/projects/{id}/cost/invoices": {
+      "get": {
+        "tags": [
+          "Cost"
+        ],
+        "summary": "Get invoices for project",
+        "description": "Returns all invoices for a specific project",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Project ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/InvoiceList"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/verify-document": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Verify document hash",
+        "description": "Verify a document hash against blockchain record",
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Document verification data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentVerify"
+            }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful verification",
+            "schema": {
+              "$ref": "#/definitions/DocumentVerifyResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid input or verification failed"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/token": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get auth token",
+        "description": "Get authentication token for API access",
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Login credentials",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginCredentials"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/TokenResponse"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ProjectList": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProjectSummary"
+          }
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "ProjectSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "ProjectDetail": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "number": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            },
+            "zip_code": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "start_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "end_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "owner": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "object",
+              "properties": {
+                "rfi_count": {
+                  "type": "integer"
+                },
+                "submittal_count": {
+                  "type": "integer"
+                },
+                "daily_report_count": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "RFIList": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RFISummary"
+          }
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "RFISummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "number": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "date_submitted": {
+          "type": "string",
+          "format": "date"
+        },
+        "date_required": {
+          "type": "string",
+          "format": "date"
+        },
+        "date_answered": {
+          "type": "string",
+          "format": "date"
+        },
+        "has_answer": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SubmittalList": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubmittalSummary"
+          }
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "SubmittalSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "number": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "specification_section": {
+          "type": "string"
+        },
+        "date_submitted": {
+          "type": "string",
+          "format": "date"
+        },
+        "date_required": {
+          "type": "string",
+          "format": "date"
+        },
+        "date_returned": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "DailyReportList": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DailyReportSummary"
+          }
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "DailyReportSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "report_number": {
+          "type": "string"
+        },
+        "report_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "weather_conditions": {
+          "type": "string"
+        },
+        "temperature_high": {
+          "type": "number"
+        },
+        "temperature_low": {
+          "type": "number"
+        },
+        "manpower_count": {
+          "type": "integer"
+        },
+        "delays": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DailyReportDetail": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "report_number": {
+              "type": "string"
+            },
+            "report_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "weather_conditions": {
+              "type": "string"
+            },
+            "temperature_high": {
+              "type": "number"
+            },
+            "temperature_low": {
+              "type": "number"
+            },
+            "precipitation": {
+              "type": "number"
+            },
+            "wind_speed": {
+              "type": "number"
+            },
+            "manpower_count": {
+              "type": "integer"
+            },
+            "delays": {
+              "type": "boolean"
+            },
+            "delay_description": {
+              "type": "string"
+            },
+            "work_performed": {
+              "type": "string"
+            },
+            "materials_received": {
+              "type": "string"
+            },
+            "equipment_used": {
+              "type": "string"
+            },
+            "visitors": {
+              "type": "string"
+            },
+            "safety_incidents": {
+              "type": "string"
+            },
+            "quality_issues": {
+              "type": "string"
+            },
+            "created_by": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "photos": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PhotoSummary"
+              }
+            }
+          }
+        }
+      }
+    },
+    "DailyReportCreate": {
+      "type": "object",
+      "required": [
+        "project_id"
+      ],
+      "properties": {
+        "project_id": {
+          "type": "integer",
+          "description": "ID of the project"
+        },
+        "weather_conditions": {
+          "type": "string"
+        },
+        "temperature_high": {
+          "type": "number"
+        },
+        "temperature_low": {
+          "type": "number"
+        },
+        "precipitation": {
+          "type": "number"
+        },
+        "wind_speed": {
+          "type": "number"
+        },
+        "delays": {
+          "type": "boolean",
+          "default": false
+        },
+        "delay_description": {
+          "type": "string"
+        },
+        "manpower_count": {
+          "type": "integer",
+          "default": 0
+        },
+        "work_performed": {
+          "type": "string"
+        },
+        "materials_received": {
+          "type": "string"
+        },
+        "equipment_used": {
+          "type": "string"
+        },
+        "visitors": {
+          "type": "string"
+        },
+        "safety_incidents": {
+          "type": "string"
+        },
+        "quality_issues": {
+          "type": "string"
+        }
+      }
+    },
+    "DailyReportResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "integer"
+        }
+      }
+    },
+    "PhotoSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "taken_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "SafetyObservationList": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SafetyObservationSummary"
+          }
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "SafetyObservationSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "observation_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "location": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "observed_by": {
+          "type": "string"
+        }
+      }
+    },
+    "IncidentList": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IncidentSummary"
+          }
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "IncidentSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "incident_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "location": {
+          "type": "string"
+        },
+        "is_osha_recordable": {
+          "type": "boolean"
+        },
+        "is_lost_time": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ChangeOrderList": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ChangeOrderSummary"
+          }
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "ChangeOrderSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "number": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "float"
+        },
+        "status": {
+          "type": "string"
+        },
+        "date_issued": {
+          "type": "string",
+          "format": "date"
+        },
+        "date_approved": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "InvoiceList": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InvoiceSummary"
+          }
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "InvoiceSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "invoice_number": {
+          "type": "string"
+        },
+        "vendor": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "float"
+        },
+        "status": {
+          "type": "string"
+        },
+        "invoice_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "DocumentVerify": {
+      "type": "object",
+      "required": [
+        "document_type",
+        "document_id",
+        "hash"
+      ],
+      "properties": {
+        "document_type": {
+          "type": "string",
+          "description": "Type of document (e.g., 'invoice', 'rfi', 'submittal')"
+        },
+        "document_id": {
+          "type": "string",
+          "description": "ID of the document"
+        },
+        "hash": {
+          "type": "string",
+          "description": "SHA-256 hash of the document"
+        }
+      }
+    },
+    "DocumentVerifyResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "is_valid": {
+              "type": "boolean"
+            },
+            "registered_by": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    },
+    "LoginCredentials": {
+      "type": "object",
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "TokenResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        },
+        "expires": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "user": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "role": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

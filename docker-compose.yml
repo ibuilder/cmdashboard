@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_DEBUG=0
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/construction_dashboard
+      - SECRET_KEY=${SECRET_KEY:-your_development_secret_key}
+      - MAIL_SERVER=${MAIL_SERVER:-smtp.example.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USE_TLS=True
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+      - PUSH_SERVICE_URL=${PUSH_SERVICE_URL}
+      - PUSH_API_KEY=${PUSH_API_KEY}
+      - WEB3_PROVIDER_URL=${WEB3_PROVIDER_URL}
+    volumes:
+      - ./logs:/app/logs
+      - ./app/uploads:/app/app/uploads
+    networks:
+      - app-network
+
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=construction_dashboard
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:1.19
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - web
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
