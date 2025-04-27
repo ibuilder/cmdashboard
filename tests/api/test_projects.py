@@ -1,7 +1,10 @@
 import unittest
 import json
+import os
 from app import create_app, db
 from app.models.project import Project
+from app.models.engineering import RFI, Submittal
+from app.models.cost import ChangeOrder, Invoice
 from app.models.user import User
 from app.auth.utils import generate_token
 
@@ -18,7 +21,7 @@ class APITestCase(unittest.TestCase):
         self.user = User(name='Test User', email='test@example.com', password='password', role='Admin')
         db.session.add(self.user)
         db.session.commit()
-
+        
         self.project = Project(name='Test Project', number='123', status='Active', owner_id=1)
         self.project.users.append(self.user)
         db.session.add(self.project)
@@ -43,6 +46,8 @@ class APITestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode())
         self.assertEqual(data['status'], 'success')
+        self.assertIsNotNone(data['data'])
+        self.assertIsNotNone(data['count'])
         self.assertTrue(len(data['data']) > 0)
 
     def test_get_project(self):
@@ -50,6 +55,8 @@ class APITestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode())
         self.assertEqual(data['status'], 'success')
+        self.assertIsNotNone(data['data'])
+        self.assertIsNotNone(data['data']['id'])
         self.assertEqual(data['data']['name'], 'Test Project')
 
     def test_get_project_not_found(self):
@@ -57,18 +64,43 @@ class APITestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_get_project_rfis(self):
+        rfi = RFI(project_id=self.project.id, number='RFI-0001', subject='Test RFI', status='Open', date_submitted='2024-05-01')
+        db.session.add(rfi)
+        db.session.commit()
         response = self.client.get(f'/api/projects/{self.project.id}/rfis', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode())
         self.assertEqual(data['status'], 'success')
+        self.assertIsNotNone(data['data'])
+        self.assertIsNotNone(data['count'])
+        self.assertTrue(len(data['data']) > 0)
 
     def test_get_project_submittals(self):
+        submittal = Submittal(project_id=self.project.id, number='SUB-0001', title='Test Submittal', status='Pending', date_submitted='2024-05-01')
+        db.session.add(submittal)
+        db.session.commit()
         response = self.client.get(f'/api/projects/{self.project.id}/submittals', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode())
         self.assertEqual(data['status'], 'success')
+        self.assertIsNotNone(data['data'])
+        self.assertIsNotNone(data['count'])
+        self.assertTrue(len(data['data']) > 0)
 
     def test_get_project_daily_reports(self):
+        from app.models.field import DailyReport
+        daily_report = DailyReport(project_id=self.project.id, report_number='DR-0001', report_date='2024-05-01', created_by=self.user.id)
+        db.session.add(daily_report)
+        db.session.commit()
+        response = self.client.get(f'/api/projects/{self.project.id}/daily-reports', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode())
+        self.assertEqual(data['status'], 'success')
+        self.assertIsNotNone(data['data'])
+        self.assertIsNotNone(data['count'])
+        self.assertTrue(len(data['data']) > 0)
+
+    def test_get_project_daily_reports_no_daily_reports(self):
         response = self.client.get(f'/api/projects/{self.project.id}/daily-reports', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode())
@@ -87,8 +119,8 @@ class APITestCase(unittest.TestCase):
     def test_create_daily_report(self):
         data = {
             'project_id': self.project.id,
-            'weather_condition': 'Sunny',
-            'temperature_high': 80,
+            'weather_conditions': 'Sunny',
+            'temperature_high': 75,
             'temperature_low': 60,
             'precipitation': 0,
             'wind_speed': 10,
@@ -102,12 +134,31 @@ class APITestCase(unittest.TestCase):
         self.assertTrue('report_id' in data)
 
     def test_get_project_safety_observations(self):
+        from app.models.safety import SafetyObservation
+        safety_observation = SafetyObservation(project_id=self.project.id, title='Test Safety Observation', category='Test Category', severity='Low')
+        db.session.add(safety_observation)
+        db.session.commit()
         response = self.client.get(f'/api/projects/{self.project.id}/safety/observations', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode())
         self.assertEqual(data['status'], 'success')
+        self.assertIsNotNone(data['data'])
+        self.assertIsNotNone(data['count'])
+        self.assertTrue(len(data['data']) > 0)
     
     def test_get_project_change_orders(self):
+        change_order = ChangeOrder(project_id=self.project.id, number='CO-0001', title='Test Change Order', amount=100.00)
+        db.session.add(change_order)
+        db.session.commit()
+        invoice = Invoice(project_id=self.project.id, invoice_number='INV-0001', vendor='Test Vendor', amount=500.00)
+        db.session.add(invoice)
+        db.session.commit()
+        response = self.client.get(f'/api/projects/{self.project.id}/cost/invoices', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode())
+        self.assertEqual(data['status'], 'success')
+        self.assertIsNotNone(data['data'])
+        self.assertIsNotNone(data['count'])
         response = self.client.get(f'/api/projects/{self.project.id}/cost/change-orders', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode())
@@ -129,6 +180,8 @@ class APITestCase(unittest.TestCase):
       self.assertEqual(response.status_code, 200)
       data = json.loads(response.data.decode())
       self.assertEqual(data['status'], 'success')
+      self.assertIsNotNone(data['user'])
+      self.assertIsNotNone(data['expires'])
       self.assertIsNotNone(data['token'])
 
     def test_get_auth_token_invalid(self):

@@ -105,6 +105,14 @@ def test_get_project_details_not_found(test_client, add_user):
     response = test_client.get('/api/projects/999', headers=headers)
     assert response.status_code == 404
 
+def test_get_daily_report_details_not_found(test_client, add_user):
+    user = add_user('test@example.com', 'password', 'Admin')
+    token = generate_token(user.id)
+    headers = {'Authorization': f'Bearer {token}'}
+    response = test_client.get('/api/daily-reports/999', headers=headers)
+    assert response.status_code == 404
+
+
 def test_create_daily_report_invalid_data(test_client, add_user, add_project):
     user = add_user('test@example.com', 'password', 'Admin')
     token = generate_token(user.id)
@@ -157,6 +165,69 @@ def test_create_daily_report_success(test_client, add_user, add_project):
         'temperature_low': 65,
         'manpower_count': 10,
     }
+    response = test_client.post('/api/daily-reports/create', headers=headers, data=json.dumps(data))
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data['status'] == 'success'
+    assert 'report_id' in data    
+
+def test_get_daily_reports_unauthenticated(test_client):
+    response = test_client.get('/api/projects/1/daily-reports')
+    assert response.status_code == 401
+
+def test_get_daily_reports_authenticated(test_client, add_user, add_project, add_daily_report):
+    user = add_user('test@example.com', 'password', 'Admin')
+    token = generate_token(user.id)
+    headers = {'Authorization': f'Bearer {token}'}
+    project = add_project('Test Project', 'TP-001', 'Active')
+    daily_report = add_daily_report(project, datetime.now(), 'DR-0001', user)
+    response = test_client.get(f'/api/projects/{project.id}/daily-reports', headers=headers)
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data['count'] == 1
+    assert data['data'][0]['report_number'] == 'DR-0001'
+
+def test_get_daily_reports_normal_user(test_client, add_user, add_project, add_daily_report):
+    user = add_user('test@example.com', 'password', 'User')
+    token = generate_token(user.id)
+    headers = {'Authorization': f'Bearer {token}'}
+    project = add_project('Test Project', 'TP-001', 'Active')
+    project.users.append(user)
+    db.session.commit()
+    daily_report = add_daily_report(project, datetime.now(), 'DR-0001', user)
+    response = test_client.get(f'/api/projects/{project.id}/daily-reports', headers=headers)
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data['count'] == 1
+    assert data['data'][0]['report_number'] == 'DR-0001'
+
+def test_get_daily_report_details_authenticated(test_client, add_user, add_project, add_daily_report):
+    user = add_user('test@example.com', 'password', 'Admin')
+    token = generate_token(user.id)
+    headers = {'Authorization': f'Bearer {token}'}
+    project = add_project('Test Project', 'TP-001', 'Active')
+    daily_report = add_daily_report(project, datetime.now(), 'DR-0001', user)
+    response = test_client.get(f'/api/daily-reports/{daily_report.id}', headers=headers)
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data['data']['report_number'] == 'DR-0001'
+
+def test_get_daily_report_details_unauthorized(test_client, add_user, add_project, add_daily_report):
+    user = add_user('test@example.com', 'password', 'User')
+    token = generate_token(user.id)
+    headers = {'Authorization': f'Bearer {token}'}
+    admin = add_user('admin@example.com', 'password', 'Admin')
+    project = add_project('Test Project', 'TP-001', 'Active')
+    daily_report = add_daily_report(project, datetime.now(), 'DR-0001', admin)
+    response = test_client.get(f'/api/daily-reports/{daily_report.id}', headers=headers)
+    assert response.status_code == 403
+
+def test_create_daily_report_success_empty_values(test_client, add_user, add_project):
+    user = add_user('test@example.com', 'password', 'Admin')
+    token = generate_token(user.id)
+    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+    project = add_project('Test Project', 'TP-001', 'Active')
+    data = {'project_id': project.id}
     response = test_client.post('/api/daily-reports/create', headers=headers, data=json.dumps(data))
     assert response.status_code == 200
     data = json.loads(response.data)

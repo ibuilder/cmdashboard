@@ -10,6 +10,7 @@ def test_get_daily_report_unauthorized(client, auth, test_project):
     """Test getting a daily report without authentication."""
     daily_report = DailyReport(project_id=test_project.id, report_date=datetime.now().date(), report_number="DR-0001", created_by=1)
     db.session.add(daily_report)
+    db.session.flush()
     db.session.commit()
 
     response = client.get(url_for('api.get_daily_report', id=daily_report.id))
@@ -19,6 +20,7 @@ def test_get_daily_report_forbidden(client, auth, test_user, test_project):
     """Test getting a daily report with an unauthorized user."""
     auth.login()
     daily_report = DailyReport(project_id=test_project.id, report_date=datetime.now().date(), report_number="DR-0001", created_by=test_user.id)
+    db.session.flush()
     db.session.add(daily_report)
     db.session.commit()
 
@@ -38,6 +40,7 @@ def test_get_daily_report_success(client, auth, test_user, test_project):
     auth.login(email = test_user.email)
     
     daily_report = DailyReport(project_id=test_project.id, report_date=datetime.now().date(), report_number="DR-0001", created_by=test_user.id)
+    db.session.flush()
     db.session.add(daily_report)
     db.session.commit()
 
@@ -60,6 +63,7 @@ def test_create_daily_report_missing_project_id(client, auth):
     assert response.status_code == 400
     assert response.json['message'] == 'Missing project_id'
 
+
 def test_create_daily_report_forbidden(client, auth, test_user, test_project):
     """Test creating a daily report with an unauthorized user."""
     auth.login()
@@ -75,6 +79,7 @@ def test_create_daily_report_already_exists(client, auth, test_user, test_projec
     auth.login(email = test_user.email)
     
     daily_report = DailyReport(project_id=test_project.id, report_date=datetime.now().date(), report_number="DR-0001", created_by=test_user.id)
+    db.session.flush()
     db.session.add(daily_report)
     db.session.commit()
 
@@ -135,6 +140,7 @@ def test_get_project_daily_reports_success(client, auth, test_user, test_project
     auth.login(email = test_user.email)
     
     daily_report = DailyReport(project_id=test_project.id, report_date=datetime.now().date(), report_number="DR-0001", created_by=test_user.id)
+    db.session.flush()
     db.session.add(daily_report)
     db.session.commit()
 
@@ -142,4 +148,23 @@ def test_get_project_daily_reports_success(client, auth, test_user, test_project
     assert response.status_code == 200
     assert response.json['status'] == 'success'
     assert len(response.json['data']) > 0
+    assert response.json['data'][0]['id'] == daily_report.id
+
+
+def test_create_daily_report_invalid_data(client, auth, test_user, test_project):
+    """Test creating a daily report with invalid data types."""
+    test_project.users.append(test_user)
+    db.session.commit()
+    auth.login(email = test_user.email)
+
+    data = {
+        'project_id': test_project.id,
+        'weather_condition': 123,  # Invalid data type
+        'temperature_high': 'abc',  # Invalid data type
+    }
+
+    response = client.post(url_for('api.create_daily_report'), headers=auth.get_auth_header(), json=data)
+    assert response.status_code == 400
+    assert response.json['message'] == 'Invalid data'
+
     assert response.json['data'][0]['id'] == daily_report.id
