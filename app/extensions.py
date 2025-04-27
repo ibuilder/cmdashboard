@@ -134,8 +134,6 @@ class ApplicationMonitor:
             return {'success': True, 'timestamp': self.stats['last_reset']}
 
 # Initialize monitor
-monitor = ApplicationMonitor()
+app_monitor = ApplicationMonitor()
 
-# Task scheduler for background tasks
-from app.utils.scheduler import TaskScheduler
-scheduler = TaskScheduler()
+from app.utils.utils import  *

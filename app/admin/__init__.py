@@ -1,5 +1,1 @@
-from flask import Blueprint
-
-admin_bp = Blueprint('api', __name__)
-
-from . import routes
+open("new_file.txt", "w").close()

@@ -1,29 +1,31 @@
-# app/__init__.py
-from flask import Flask, request, g, jsonify
-from app.config import Config
-from app.extensions import db, migrate, login_manager, csrf, mail, moment, cache, limiter, monitor, scheduler
-from app.utils.security import configure_security
+from flask import Flask, request, g
+from app.extensions import db, migrate, login_manager, csrf, mail, moment, cache, limiter, app_monitor  # Import extensions
+from app.utils.security import configure_security  # Import security configuration
 import os
-import logging
-from logging.handlers import RotatingFileHandler
 import time
 from sqlalchemy import text
 from datetime import datetime, timedelta
-from app.models import *
-# Define Swagger URL constant
-SWAGGER_URL = '/api/docs'  # URL for exposing Swagger UI
+from app.models import *  # Import models
+
+# Define Swagger URL constant for API documentation
+SWAGGER_URL = '/api/docs'
+
 from markupsafe import Markup
+
+
 def configure_jinja_filters(app):
     """Configure custom Jinja2 filters for the application."""
-    
+
     @app.template_filter('nl2br')
     def nl2br_filter(text):
         """Convert newlines to HTML line breaks."""
         if not text:
             return ""
-        # Convert newlines to HTML line breaks
         text = text.replace('\n', Markup('<br>'))
         return Markup(text)
+
+
+
 
 def create_app(config_class=None):
     if config_class is None:
@@ -31,65 +33,65 @@ def create_app(config_class=None):
         config_class = get_config()
         
     app = Flask(__name__, static_folder='static', static_url_path='/static')
-    app.config.from_object(config_class)
-    
-    # Initialize extensions
-    db.init_app(app)
-    migrate.init_app(app, db)
-    login_manager.init_app(app)
-    csrf.init_app(app)
-    mail.init_app(app)
-    moment.init_app(app)
-    
-    # Configure caching
+    app.config.from_object(config_class) # Load configuration from config object
+
+    # Initialize Flask extensions
+    db.init_app(app) # Initialize SQLAlchemy
+    migrate.init_app(app, db) # Initialize database migration utility
+    login_manager.init_app(app) # Initialize login manager
+    csrf.init_app(app) # Initialize CSRF protection
+    mail.init_app(app) # Initialize email support
+    moment.init_app(app) # Initialize moment.js integration
+
+    # Configure caching with a default timeout
     cache_config = {
-        'CACHE_TYPE': 'simple',  # Use FileSystemCache or RedisCache in production
-        'CACHE_DEFAULT_TIMEOUT': 300
+        'CACHE_TYPE': 'simple',  # Basic in-memory cache, good for development. Use FileSystemCache or RedisCache in production
+        'CACHE_DEFAULT_TIMEOUT': 300  # Cache expiration time in seconds
     }
     app.config.from_mapping(cache_config)
     cache.init_app(app)
-    
-    # Initialize rate limiting
+
+    # Initialize rate limiting to prevent abuse
     limiter.init_app(app)
-    
-    # Initialize monitoring
-    monitor.init_app(app)
-    
-    # Initialize task scheduler
-    scheduler.init_app(app)
-    
-    # Configure security middleware
+
+    # Initialize application monitoring for tracking performance and errors
+    app_monitor.init_app(app)
+
+    # Configure security settings and middleware
     configure_security(app)
-    
-    # Create upload directory if it doesn't exist
+
+    # Ensure upload directory exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    
-    # Register middleware functions
+
+    # Register before and after request middleware functions
     register_middleware(app)
-    
-    # Register blueprints in an organized way
+
+    # Register application blueprints to structure the app
     register_blueprints(app)
-    
-    # Register error handlers
+
+    # Register error handling for different error codes
     register_error_handlers(app)
-    
-    # Create context processor to make global variables available in templates
+
+    # Register context processors to add common data to Jinja2 templates
     register_context_processors(app)
-    
-    # Configure logging
+
+    # Configure logging to record application activities
     from app.utils.logger import configure_logging
     configure_logging(app)
-    
-    # Register shell context processor
+
+    # Register shell context processor for Flask shell access
     register_shell_context(app)
-    
-    # Run startup tasks
+
+    # Run startup tasks like database and directory setup
     run_startup_tasks(app)
+
     configure_jinja_filters(app)
     return app
 
+
 def register_middleware(app):
-    """Register middleware functions"""
+    """Register request middleware functions."""
+
     @app.before_request
     def before_request():
         g.start_time = time.time()
@@ -101,38 +103,39 @@ def register_middleware(app):
         if hasattr(g, 'start_time'):
             duration = time.time() - g.start_time
             
-            # Log slow requests
+            # Log slow requests if they exceed a threshold
             if duration > app.config.get('SLOW_REQUEST_THRESHOLD', 0.5):
                 app.logger.warning(f"Slow request: {request.method} {request.path} - {duration:.4f}s")
             
-            # Record in monitoring
+            # Record request in monitoring
             endpoint = request.endpoint or 'unknown'
-            monitor.record_request(endpoint, request.method, response.status_code, duration)
+            app_monitor.record_request(endpoint, request.method, response.status_code, duration)
             
-        # Add security headers
+        # Add security headers to enhance security
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['X-XSS-Protection'] = '1; mode=block'  # Enable XSS protection in browsers
         
         return response
     
     # Register error tracking
     @app.errorhandler(Exception)
     def handle_exception(e):
-        monitor.record_error(e, request.endpoint, request.method, request.path)
+        app_monitor.record_error(e, request.endpoint, request.method, request.path)
         # Continue with normal error handling
         raise e
 
+
 def register_blueprints(app):
     """Register all application blueprints in an organized way"""
-    
-    # Core blueprints
+    # Import blueprints for core parts of the application
     from app.auth.routes import auth_bp
     from app.dashboard.routes import dashboard_bp
     from app.projects.routes import projects_bp
     from app.admin.routes import admin_bp
     from app.api.routes import api_bp
     
+    # Register blueprints with appropriate URL prefixes
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(dashboard_bp) 
     app.register_blueprint(admin_bp, url_prefix='/admin')
@@ -146,9 +149,13 @@ def register_blueprints(app):
     # Project section blueprints
     register_project_blueprints(app)
 
+
+from app.projects import *
+
+
 def register_project_blueprints(app):
     """Register all project-related module blueprints"""
-    
+
     # First, register the main projects blueprint
     from app.projects.routes import projects_bp
     app.register_blueprint(projects_bp, url_prefix='/projects')
@@ -190,10 +197,11 @@ def register_project_blueprints(app):
     
     from app.projects.settings import settings_bp
     app.register_blueprint(settings_bp, url_prefix='/projects', name='projects_settings')
-    
+
+
 def register_context_processors(app):
-    """Register context processors"""
-    @app.context_processor
+    """Register context processors."""
+    @app.context_processor # Make these functions available in Jinja2 templates
     def inject_globals():
         from datetime import datetime
         return {
@@ -201,9 +209,10 @@ def register_context_processors(app):
             'app_name': app.config.get('COMPANY_NAME', 'Construction Dashboard'),
             'app_version': '1.0.0',
             'is_debug': app.debug
-        }
-    
-    # Add utility context processor
+        } # Inject global variables into templates
+
+
+    # Add utility context processor to format common types of data
     @app.context_processor
     def utility_processor():
         def format_currency(value):
@@ -248,6 +257,7 @@ def register_context_processors(app):
             format_date=format_date,
             format_filesize=format_filesize,
             get_nav_modules=get_nav_modules
+
         )
 
 def register_error_handlers(app):
@@ -263,15 +273,14 @@ def register_error_handlers(app):
     app.register_error_handler(403, handle_403_error)
     app.register_error_handler(404, handle_404_error)
     app.register_error_handler(500, handle_500_error)
+
+
 def generate_request_id():
-    """Generate a unique ID for the current request"""
+    """Generate a unique ID for the current request."""
     import uuid
     return str(uuid.uuid4())
 
 def register_shell_context(app):
-    """Register shell context objects"""
-    @app.shell_context_processor
-    def make_shell_context():
         
         
         
@@ -290,9 +299,15 @@ def register_shell_context(app):
             'ChangeOrder': ChangeOrder,
             'Invoice': Invoice
         }
+        
+    """Register shell context objects."""
+    @app.shell_context_processor
+    def make_shell_context():
+        """Expose database and models to the Flask shell."""
+        return make_shell_context()
 
 def check_db_connection():
-    """Check database connection"""
+    """Check database connection."""
     try:
         result = db.session.execute('SELECT 1').scalar()
         return result == 1
@@ -302,9 +317,9 @@ def check_db_connection():
 
 def exempt_csrf_for_api_routes(app):
     """Exempt API routes from CSRF protection"""
-    # Updated approach for newer Flask-WTF versions
+    # Exclude API routes from CSRF protection
     @csrf.exempt
-    def csrf_exempt_api():
+    def csrf_exempt_api(): # Skip CSRF for any route that begins with /api/
         if request.path.startswith('/api/'):
             return True
         return False
@@ -330,7 +345,7 @@ def clean_temp_files(app):
                     app.logger.error(f'Failed to delete {file_path}. Reason: {e}')
     except Exception as e:
         app.logger.error(f"Error in temp file cleanup: {e}")
-
+    
 def collect_db_stats(app):
     """
     Collect database statistics
@@ -354,16 +369,16 @@ def collect_db_stats(app):
 
 def run_startup_tasks(app):
     """Run tasks at application startup"""
-    with app.app_context():
+    with app.app_context(): # Use an app context for database operations
         # Check and create required database tables
         if app.config.get('AUTO_MIGRATE', False):
             try:
                 db.create_all()
-                app.logger.info('Database tables created')
+                app.logger.info('Database tables created or already existed')
             except Exception as e:
-                app.logger.error(f'Error creating database tables: {e}')
+                app.logger.error(f'Error creating or accessing database tables: {e}')
         
-        # Check and create required directories
+        # Check and create required directories for uploads and logs
         required_dirs = [
             os.path.join(app.config['UPLOAD_FOLDER'], 'documents'),
             os.path.join(app.config['UPLOAD_FOLDER'], 'photos'),
@@ -374,15 +389,15 @@ def run_startup_tasks(app):
         for directory in required_dirs:
             if not os.path.exists(directory):
                 os.makedirs(directory, exist_ok=True)
-                app.logger.info(f'Created directory: {directory}')
+                app.logger.info(f'Created directory: {directory}') # Log directory creation
         
-        # Check feature flags
+        # Check and load feature flags if module exists
         try:
             from app.utils.feature_flags import load_feature_flags
             load_feature_flags()
-            app.logger.info('Feature flags loaded')
+            app.logger.info('Feature flags loaded') # Log flag loading
         except ImportError:
-            app.logger.info('Feature flags module not found, skipping')
+            app.logger.info('Feature flags module not found, skipping') # Log flag skipping
         
         # Use threading for background tasks
         import threading
@@ -423,3 +438,4 @@ def run_startup_tasks(app):
     
     return app
 
+app = create_app()

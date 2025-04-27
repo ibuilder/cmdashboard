@@ -1,26 +1,20 @@
-def hash_password(password):
-    from werkzeug.security import generate_password_hash
-    return generate_password_hash(password)
+from app import db
+from app.models.user import User
+from flask import current_app
 
-def check_password(hashed_password, password):
-    from werkzeug.security import check_password_hash
-    return check_password_hash(hashed_password, password)
 
-def generate_token(user_id):
-    import jwt
-    from datetime import datetime, timedelta
-    secret_key = "your_secret_key"  # Replace with your actual secret key
-    expiration = datetime.utcnow() + timedelta(days=1)
-    token = jwt.encode({'user_id': user_id, 'exp': expiration}, secret_key, algorithm='HS256')
-    return token
+def create_user(username, password, email=None, is_admin=False, full_name=None):
+    """
+    Create a new user in the database.
 
-def decode_token(token):
-    import jwt
-    secret_key = "your_secret_key"  # Replace with your actual secret key
-    try:
-        payload = jwt.decode(token, secret_key, algorithms=['HS256'])
-        return payload['user_id']
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
+    :param username: The username of the new user.
+    :param password: The password of the new user.
+    :param email: The email of the new user (optional).
+    :param is_admin: Whether the user is an admin (default: False).
+    :return: The newly created User object.
+    """
+    user = User(username=username, email=email, is_admin=is_admin)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+    return user
