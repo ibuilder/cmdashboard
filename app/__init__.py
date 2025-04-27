@@ -7,6 +7,7 @@ import time
 from sqlalchemy import text, inspect
 from datetime import datetime, timedelta
 from app.models import *
+from flask_caching import Cache
 from markupsafe import Markup
 import uuid
 
@@ -56,6 +57,7 @@ def create_app(config_class=None) -> Flask:
     }
     app.config.from_mapping(cache_config)
     cache.init_app(app)
+
 
     
     # Initialize rate limiting to prevent abuse

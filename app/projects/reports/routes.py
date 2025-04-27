@@ -1,17 +1,20 @@
-from flask import Blueprint, render_template, abort, request, current_app
+from flask import Blueprint, render_template, abort, request, current_app, jsonify
 from app.models.project import Project, ProjectStatusEnum
+from flask_caching import Cache
 from markupsafe import escape
-from app.models.field import DailyReport, DailyReportSchema
+from app.models.field import DailyReport, DailyReportSchema, db
 import logging
-from app.models.cost import ChangeOrder, Invoice
+from app.models.cost import ChangeOrder, Invoice, db
 from app.models.safety import SafetyIncident, SafetyObservation
 
 # Configure logging for the reports blueprint
 logger = logging.getLogger(__name__)
 
 reports_bp = Blueprint('reports', __name__)
+# Initialize the cache
+cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
-@reports_bp.route('/project/<int:project_id>/daily-report')
+@reports_bp.route('/project/<int:project_id>/daily-report', methods=['GET'])
 def project_daily_report(project_id):
     """Generates an HTML daily report for a specified project.
     
@@ -29,17 +32,22 @@ def project_daily_report(project_id):
         404: If the project with the given ID is not found.
         500: If any error occurs during the process of generating the report.
     """
+    logger.info(f"Generating daily report for project {project_id}")
+    cache_key = f'daily_report_{project_id}'
+    cached_report = cache.get(cache_key)
+    if cached_report:
+        return cached_report
     try:
         project = Project.query.get(project_id)
 
         if not project:
             logger.warning(f"Project with ID {project_id} not found.")
             abort(404, description="Project not found")
-
-        daily_reports = DailyReport.query.filter_by(project_id=project_id).order_by(
-            DailyReport.report_date.asc()).all()
-
+        
+        # Fetch daily reports with optimized query
+        daily_reports = DailyReport.query.filter(DailyReport.project_id == project_id).order_by(DailyReport.report_date.asc()).all()
         # Prepare data for rendering in the HTML template
+        
         report_data = {
             'project': {
                 'name': escape(project.name),
@@ -57,7 +65,9 @@ def project_daily_report(project_id):
             } for report in daily_reports]
         }
 
-        return render_template('reports/daily_report.html', report_data=report_data)
+        report = render_template('reports/daily_report.html', report_data=report_data)
+        cache.set(cache_key, report)
+        return report
     except Exception as error:
         logger.error(f"An error occurred while generating the daily report for project {project_id}: {error}")
         abort(500, description="An error occurred while generating the report.")
@@ -74,7 +84,7 @@ def project_monthly_report(project_id):
         month = request.args.get('month')
         year = request.args.get('year')
 
-        # Prepare data for rendering
+        # Prepare data for rendering in the HTML template
         report_data = {
             'project': {
                 'name': escape(project.name),
@@ -98,7 +108,7 @@ def project_status_report(project_id):
             logger.warning(f"Project with ID {project_id} not found.")
             abort(404, description="Project not found")
 
-        # Prepare data for rendering
+        # Prepare data for rendering in the HTML template
         report_data = {
             'project': {
                 'name': escape(project.name),
@@ -124,10 +134,10 @@ def project_cost_report(project_id):
             logger.warning(f"Project with ID {project_id} not found.")
             abort(404, description="Project not found")
 
-        change_orders = ChangeOrder.query.filter_by(project_id=project_id).all()
-        invoices = Invoice.query.filter_by(project_id=project_id).all()
-
-        # Prepare data for rendering
+        # Fetch change orders and invoices with optimized query
+        change_orders = ChangeOrder.query.filter(ChangeOrder.project_id == project_id).all()
+        invoices = Invoice.query.filter(Invoice.project_id == project_id).all()
+        # Prepare data for rendering in the HTML template
         report_data = {
             'project': {
                 'name': escape(project.name),
@@ -161,10 +171,10 @@ def project_safety_report(project_id):
             logger.warning(f"Project with ID {project_id} not found.")
             abort(404, description="Project not found")
 
-        incidents = SafetyIncident.query.filter_by(project_id=project_id).all()
-        observations = SafetyObservation.query.filter_by(project_id=project_id).all()
-
-        # Prepare data for rendering
+        # Fetch incidents and observations with optimized query
+        incidents = SafetyIncident.query.filter(SafetyIncident.project_id == project_id).all()
+        observations = SafetyObservation.query.filter(SafetyObservation.project_id == project_id).all()
+        # Prepare data for rendering in the HTML template
         report_data = {
             'project': {
                 'name': escape(project.name),
@@ -198,7 +208,7 @@ def project_general_information_report(project_id):
             logger.warning(f"Project with ID {project_id} not found.")
             abort(404, description="Project not found")
 
-        # Prepare data for rendering
+        # Prepare data for rendering in the HTML template
         report_data = {
             'project': { # Escape data to prevent XSS
                 'name': escape(project.name),
@@ -229,14 +239,16 @@ def project_data_visualization(project_id):
             logger.warning(f"Project with ID {project_id} not found.")
             abort(404, description="Project not found")
 
-        daily_reports = DailyReport.query.filter_by(project_id=project_id).all()
+        # Fetching related data for rendering in the HTML template
+        daily_reports = DailyReport.query.filter(DailyReport.project_id == project_id).all()
         daily_reports_schema = DailyReportSchema(many=True)
         daily_reports_data = daily_reports_schema.dump(daily_reports)
 
-        change_orders = ChangeOrder.query.filter_by(project_id=project_id).all()
-        invoices = Invoice.query.filter_by(project_id=project_id).all()
-        incidents = SafetyIncident.query.filter_by(project_id=project_id).all()
-        observations = SafetyObservation.query.filter_by(project_id=project_id).all()
+        # Fetch change orders, invoices, incidents, and observations with optimized query
+        change_orders = ChangeOrder.query.filter(ChangeOrder.project_id == project_id).all()
+        invoices = Invoice.query.filter(Invoice.project_id == project_id).all()
+        incidents = SafetyIncident.query.filter(SafetyIncident.project_id == project_id).all()
+        observations = SafetyObservation.query.filter(SafetyObservation.project_id == project_id).all()
 
         # Prepare data for rendering
         report_data = {

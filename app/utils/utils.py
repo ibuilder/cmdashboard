@@ -1,8 +1,11 @@
 import uuid
 import os
 import jwt
+import subprocess
 import logging
 from datetime import datetime, timedelta
+from sqlalchemy import text
+from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 logger = logging.getLogger(__name__)
@@ -71,3 +74,47 @@ def decode_token(token: str) -> int | None:
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         logger.warning(f"Invalid or expired token: {token}")
         return None
+
+def perform_database_maintenance():
+    """
+    Performs database maintenance tasks such as cleaning up old data.
+    """
+    logger.info("Performing database maintenance...")
+    try:
+        # Example: Delete old logs from the 'logs' table
+        with db.engine.connect() as connection:
+          connection.execute(text("DELETE FROM logs WHERE timestamp < :old_date"), {"old_date": datetime.now() - timedelta(days=30)})
+          connection.commit()
+        logger.info("Old data removed.")
+    except Exception as e:
+        logger.error(f"Error during database maintenance: {e}")
+
+
+
+def check_dependencies_updates():
+    """
+    Checks for available updates to the project's dependencies.
+
+    Returns:
+        str: A string containing the output of the pip list command 
+             with outdated packages, or an error message if the command fails.
+    """
+    logger.info("Checking for dependencies updates...")
+    try:
+        result = subprocess.run(['pip', 'list', '--outdated'], capture_output=True, text=True, check=True)
+        logger.info("Dependencies updates checked.")
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error checking for dependency updates: {e}")
+        return f"Error checking for dependency updates: {e}"
+
+def update_dependencies():
+    """
+    Updates the project's dependencies to their latest versions.
+    """
+    logger.info("Updating dependencies...")
+    try:
+        subprocess.run(['pip', 'install', '--upgrade', '-r', 'requirements.txt'], check=True)
+        logger.info("Dependencies updated.")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error updating dependencies: {e}")

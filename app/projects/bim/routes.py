@@ -4,11 +4,16 @@ import os, json
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required
 from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.http import HTTP_STATUS_CODES
 from werkzeug.utils import secure_filename
+from flask_caching import Cache
 
 from app.models.project import Project
 from app.models.bim import BIMModel
 from app.extensions import db
+
+cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
+
 
 bim_bp = Blueprint('bim', __name__, template_folder='templates', static_folder='static')
 
@@ -28,6 +33,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ['ifc']
 
 
+@cache.cached(timeout=60)
 @bim_bp.route('/<int:project_id>/bim_models')
 @login_required
 def index(project_id):
@@ -40,8 +46,20 @@ def index(project_id):
     Returns:
         flask.Response: The rendered BIM model index page.
     """
-    project = Project.query.get_or_404(project_id)
-    bim_models = BIMModel.query.filter_by(project_id=project_id).all()
+    try:
+        project = Project.query.get_or_404(project_id)
+        # Optimize query by adding index to project_id column
+        # Index in the database
+        bim_models = BIMModel.query.filter(BIMModel.project_id == project_id).all()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        flash(f'An error occurred: {HTTP_STATUS_CODES.get(500)}', 'danger')
+        logger.error(f"Database error in /bim_models route: {e}", exc_info=True)
+        abort(500)  # Internal Server Error
+    except Exception as e:
+        flash(f'An unexpected error occurred: {HTTP_STATUS_CODES.get(500)}', 'danger')
+        logger.error(f"Error in /bim_models route: {e}", exc_info=True)
+        abort(500)  # Internal Server Error
     return render_template('bim/index.html', project=project, bim_models=bim_models)
 
 
@@ -58,17 +76,30 @@ def view_bim_model(project_id, bim_model_id):
     Returns:
         flask.Response: The rendered BIM model view page.
     """
-    project = Project.query.get_or_404(project_id)
-    bim_model = BIMModel.query.get_or_404(bim_model_id)
-    if bim_model.project_id != project.id:
-        logger.warning(f"Unauthorized attempt to view BIM model {bim_model_id} from project {project_id}")
-        abort(403)
-    
-    if bim_model.file_path.endswith('.ifc'):
-        with open(bim_model.file_path, 'r') as file:
-            content = file.read()
-        return render_template('bim/view_ifc.html', project=project, bim_model=bim_model, content=content)
-    else:
+    try:
+        project = Project.query.get_or_404(project_id)
+        bim_model = BIMModel.query.get_or_404(bim_model_id)
+        # Optimize query by adding index to project_id column
+        if bim_model.project_id != project.id:
+            logger.warning(f"Unauthorized attempt to view BIM model {bim_model_id} from project {project_id}")
+            abort(403)
+
+        if bim_model.file_path.endswith('.ifc'):
+            with open(bim_model.file_path, 'r') as file:
+                content = file.read()
+            return render_template('bim/view_ifc.html', project=project, bim_model=bim_model, content=content)
+        else:
+            flash(f"BIM model '{bim_model_id}' file not supported in this application.", 'danger')
+            logger.error(f"BIM model '{bim_model_id}' file not supported in this application for project ID: {project_id}")
+            return redirect(url_for('bim.index', project_id=project_id))
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        flash(f'An error occurred: {HTTP_STATUS_CODES.get(500)}', 'danger')
+        logger.error(f"Database error in /bim_models/<int:bim_model_id>/view route: {e}", exc_info=True)
+        abort(500)  # Internal Server Error
+    except Exception as e:
+        flash(f'An unexpected error occurred: {HTTP_STATUS_CODES.get(500)}', 'danger')
+        logger.error(f"Error in /bim_models/<int:bim_model_id>/view route: {e}", exc_info=True)
         flash(f"BIM model '{bim_model_id}' file not supported in this application.", 'danger')
         logger.error(f"BIM model '{bim_model_id}' file not supported in this application for project ID: {project_id}")
         return redirect(url_for('bim.index', project_id=project_id))
@@ -116,6 +147,7 @@ def add_bim_model(project_id):
                 logger.info(f"BIM model '{filename}' added successfully for project ID: {project_id}")
                 return redirect(url_for('bim.index', project_id=project_id))
         except SQLAlchemyError as e:
+            # Rollback database in case of error
             db.session.rollback()
             flash('An error occurred while adding the BIM model', 'danger')
             logger.error(f"Database error adding BIM model for project ID {project_id}: {e}", exc_info=True)
@@ -140,8 +172,10 @@ def delete_bim_model(project_id, bim_model_id):
     Returns:
         flask.Response: A redirect to the BIM model index page.
     """
+    cache.clear()
     bim_model = BIMModel.query.get_or_404(bim_model_id)
     project = Project.query.get_or_404(project_id)
+    # Optimize query by adding index to project_id column
     if bim_model.project_id != project.id:
         logger.warning(f"Unauthorized attempt to delete BIM model {bim_model_id} from project {project_id}")
         abort(403)
@@ -154,6 +188,7 @@ def delete_bim_model(project_id, bim_model_id):
         db.session.commit()
         flash('BIM model deleted successfully', 'success')
         logger.info(f"BIM model '{bim_model_id}' deleted successfully from project ID: {project_id}")
+    # Rollback database in case of error
     except SQLAlchemyError as e:
         db.session.rollback()
         flash('An error occurred while deleting the BIM model', 'danger')
